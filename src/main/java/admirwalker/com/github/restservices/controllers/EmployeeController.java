@@ -6,7 +6,9 @@ import admirwalker.com.github.restservices.repositories.EmployeeRepository;
 import admirwalker.com.github.restservices.models.Employee;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,8 +51,10 @@ public class EmployeeController {
 
     // HTTP POST
     @PostMapping("employees")
-    public Employee newEmployee(@RequestBody Employee newEmployee){
-        return employeeRepository.save(newEmployee);
+    public ResponseEntity<?> newEmployee(@RequestBody Employee newEmployee){
+        EntityModel<Employee> entityModel = assembler.toModel(employeeRepository.save(newEmployee));
+        // ResponseEntity HTTP 201 Created status message
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
 
     // This is not rest, this is RPC (Remote Procedure Call)
@@ -77,8 +81,8 @@ public class EmployeeController {
     */
     // HTTP PUT
     @PutMapping("/employees/{id}")
-    public Employee replaceEmployee(@RequestBody Employee newEmployee, @PathVariable Long id){
-        return employeeRepository.findById(id).map(employee -> {
+    public ResponseEntity<?> replaceEmployee(@RequestBody Employee newEmployee, @PathVariable Long id){
+        Employee updatedEmployee = employeeRepository.findById(id).map(employee -> {
             employee.setName(newEmployee.getName());
             employee.setRole(newEmployee.getRole());
             return employeeRepository.save(employee);
@@ -86,11 +90,14 @@ public class EmployeeController {
             newEmployee.setId(id);
             return employeeRepository.save(newEmployee);
         });
+        EntityModel<Employee> entityModel = assembler.toModel(updatedEmployee);
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
     // HTTP DELETE
     @DeleteMapping("/employees/{id}")
-    public void deleteEmployee(@PathVariable Long id){
+    public ResponseEntity<?> deleteEmployee(@PathVariable Long id){
         employeeRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

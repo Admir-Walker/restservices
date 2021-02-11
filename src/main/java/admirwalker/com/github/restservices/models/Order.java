@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "CUSTOMER_ORDER")
+@Table(name = "CUSTOMER_ORDER") // because order is not a valid name for table
 public class Order {
     private @Id @GeneratedValue(strategy = GenerationType.AUTO) Long id;
     private String description;
